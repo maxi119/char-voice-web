@@ -11,8 +11,19 @@
 
 建議流程：先用 Qwen 依描述設計音色，勾選「用 BreezyVoice 以台灣腔重念」，存角色時參考音選台灣腔版；台詞生成時引擎選 BreezyVoice。
 
-BreezyVoice 安裝（WSL）：`wsl -d Ubuntu -- bash /mnt/c/Users/User/Documents/GitHub/tts-web/wsl/install_breezy.sh`
-手動啟動：`wsl -d Ubuntu -- bash /mnt/c/Users/User/Documents/GitHub/tts-web/wsl/run_breezy.sh`（start.bat 會自動啟動）
+BreezyVoice 安裝（WSL，在專案目錄執行）：`wsl -d Ubuntu --cd wsl -- bash ./install_breezy.sh`
+手動啟動：`wsl -d Ubuntu --cd wsl -- bash ./run_breezy.sh`（start.bat 會自動啟動）
+
+## 環境變數（`.env`）
+設定寫在專案根目錄的 **`.env`**（範本：`.env.example`，複製一份改名即可）。`.env` 不進 git；系統環境變數優先於 `.env`。
+
+| 變數 | 用途 | 預設 |
+|---|---|---|
+| `ALIGNER_PYTHON` | 跑 Whisper 對齊的 Python（需裝 openai-whisper），例如 `<ComfyUI>\python_embeded\python.exe` | 未設定 → 用字數比例估計 |
+| `BREEZY_DIR` | WSL 內 BreezyVoice 安裝目錄 | `~/tts/BreezyVoice` |
+| `WSL_DISTRO` | start.bat 使用的 WSL 發行版 | `Ubuntu` |
+
+也可以改用系統環境變數，例如 `setx ALIGNER_PYTHON "...\python.exe"`。
 
 ## 前置需求
 - ComfyUI 已安裝 [ComfyUI-QwenTTS](https://github.com/1038lab/ComfyUI-QwenTTS)（第一次生成時會自動下載模型）
@@ -45,5 +56,5 @@ BreezyVoice 安裝（WSL）：`wsl -d Ubuntu -- bash /mnt/c/Users/User/Documents
 ## ComfyUI 端的變更（安裝時做的）
 - 安裝 `custom_nodes/ComfyUI-QwenTTS` 和它的相依套件，另外補裝 `sox`。
 - transformers 由 5.10.1 降到 4.57.3，因為 Qwen3-TTS 官方只支援這個版本。
-- 安裝前的套件清單備份在 `E:\ComfyUI_windows_portable\pip_freeze_before_qwentts.txt`。
+- 安裝前的套件清單備份在 ComfyUI 根目錄的 `pip_freeze_before_qwentts.txt`。
 - 還原指令：`python_embeded\python.exe -m pip install transformers==5.10.1 huggingface_hub==1.17.0`

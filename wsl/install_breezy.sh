@@ -1,9 +1,14 @@
 #!/bin/bash
 set -e
 export PATH="$HOME/.local/bin:/usr/local/bin:/usr/bin:/bin"
-mkdir -p ~/tts && cd ~/tts
-[ -d BreezyVoice ] || git clone --recursive https://github.com/mtkresearch/BreezyVoice.git
-cd BreezyVoice
+# 讀專案根目錄 .env 的 BREEZY_DIR（環境變數優先）
+ENV_FILE="$(cd "$(dirname "$0")/.." && pwd)/.env"
+[ -z "$BREEZY_DIR" ] && [ -f "$ENV_FILE" ] && BREEZY_DIR="$(sed -n 's/^BREEZY_DIR=//p' "$ENV_FILE" | tr -d '\r' | tail -1)"
+# BREEZY_DIR：BreezyVoice 安裝目錄（預設 ~/tts/BreezyVoice）
+BREEZY_DIR="${BREEZY_DIR:-$HOME/tts/BreezyVoice}"
+mkdir -p "$(dirname "$BREEZY_DIR")"
+[ -d "$BREEZY_DIR" ] || git clone --recursive https://github.com/mtkresearch/BreezyVoice.git "$BREEZY_DIR"
+cd "$BREEZY_DIR"
 command -v uv >/dev/null || curl -LsSf https://astral.sh/uv/install.sh | sh
 [ -d .venv ] || uv venv -p 3.10 .venv -q
 grep -v deepspeed requirements.txt > req_nods.txt

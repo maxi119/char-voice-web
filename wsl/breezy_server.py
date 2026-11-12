@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-BreezyVoice 常駐服務（在 WSL 的 ~/tts/BreezyVoice 目錄、用其 .venv 執行）
+BreezyVoice 常駐服務（在 WSL 的 $BREEZY_DIR（預設 ~/tts/BreezyVoice）目錄、用其 .venv 執行）
 POST /tts  JSON {"prompt_wav_b64": "...", "prompt_text": "參考音逐字稿", "text": "要念的內容"}
 回傳 audio/wav（22050 Hz）
 GET /health

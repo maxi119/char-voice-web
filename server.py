@@ -34,6 +34,24 @@ except Exception:
     print("[提示] 未安裝 opencc-python-reimplemented，繁體字不會轉簡體（可能出現港式發音）")
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
+
+
+def load_dotenv(path):
+    """讀專案根目錄的 .env（KEY=VALUE）；已存在的系統環境變數優先，空值略過。"""
+    if not os.path.exists(path):
+        return
+    with open(path, encoding="utf-8-sig") as f:
+        for line in f:
+            line = line.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+            k, v = line.split("=", 1)
+            k, v = k.strip(), v.strip().strip('"').strip("'")
+            if k and v and not os.environ.get(k):
+                os.environ[k] = v
+
+
+load_dotenv(os.path.join(ROOT, ".env"))
 STATIC = os.path.join(ROOT, "static")
 DATA = os.path.join(ROOT, "data")
 AUDIO = os.path.join(DATA, "audio")
@@ -56,7 +74,8 @@ DEFAULT_CFG = {
     "default_language": "Chinese",
     "simplify_for_tts": True,  # 送進模型前把繁體轉簡體（只影響發音，不改你看到的文字）
     # 用來跑 Whisper 字詞對齊（重點字定位）的 Python；需裝有 openai-whisper。找不到時改用字數比例估計
-    "aligner_python": r"E:\ComfyUI_windows_portable\python_embeded\python.exe",
+    # 優先讀環境變數 ALIGNER_PYTHON（例如 ComfyUI 的 python_embeded\python.exe）
+    "aligner_python": "",
     # BreezyVoice（台灣腔）服務位址，由 wsl/run_breezy.sh 在 WSL 啟動
     "breezy_url": "http://localhost:9880",
     # 自動加在聲音描述後面的口音指示（留空則不加）
@@ -617,7 +636,7 @@ class Aligner:
         threading.Thread(target=self._reaper, daemon=True).start()
 
     def python(self):
-        p = CFG.get("aligner_python") or ""
+        p = os.environ.get("ALIGNER_PYTHON") or CFG.get("aligner_python") or ""
         return p if p and os.path.exists(p) else None
 
     def _reaper(self):

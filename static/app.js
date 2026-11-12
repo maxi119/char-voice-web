@@ -51,7 +51,7 @@ async function refreshStatus() {
     } else if (!allNodes) {
       b.innerHTML = `<b>ComfyUI 尚未安裝 Qwen3-TTS 節點</b>，網站需要 <a href="https://github.com/1038lab/ComfyUI-QwenTTS" target="_blank">ComfyUI-QwenTTS</a> 才能生成語音。<br>
         安裝方式（擇一）：<br>① ComfyUI Manager → Custom Nodes Manager → 搜尋 <b>ComfyUI-QwenTTS</b>（作者 1038lab）→ Install → 重新啟動 ComfyUI<br>
-        ② 手動：<pre>cd E:\\ComfyUI_windows_portable\\ComfyUI\\custom_nodes
+        ② 手動：<pre>cd &lt;ComfyUI 目錄&gt;\\ComfyUI\\custom_nodes
 git clone https://github.com/1038lab/ComfyUI-QwenTTS
 ..\\..\\python_embeded\\python.exe -m pip install -r ComfyUI-QwenTTS\\requirements.txt</pre>
         首次生成會自動下載模型（約 4–8 GB）到 <code>ComfyUI/models/TTS/Qwen3-TTS/</code>。`;
