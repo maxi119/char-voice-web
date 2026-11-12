@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>聲音工坊</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="top">
+  <div class="brand"><span class="logo">◉</span> 聲音工坊 <small>Qwen3-TTS × ComfyUI</small></div>
+  <nav class="tabs">
+    <button data-tab="design" class="active">🎨 設計聲音</button>
+    <button data-tab="speak">🎙 台詞生成</button>
+    <button data-tab="library">📚 聲音庫</button>
+    <button data-tab="settings">⚙ 設定</button>
+  </nav>
+  <div id="status" class="status" title="ComfyUI 狀態">連線中…</div>
+</header>
+
+<div id="banner" class="banner hidden"></div>
+
+<main>
+<!-- ============ 設計聲音 ============ -->
+<section id="tab-design" class="tab active">
+  <div class="grid2">
+    <div class="card">
+      <h2>依描述設計聲音</h2>
+      <label>聲音描述 <span class="hint">（越具體越好：性別、年齡、音色、情緒、說話方式）</span></label>
+      <textarea id="d-instruct" rows="4" placeholder="例：三十多歲的女性，聲音低沉沙啞，語氣冷靜帶點疲憊，說話緩慢而有分量"></textarea>
+      <div id="d-chips" class="chips"></div>
+      <div class="examples"><span class="hint">範例：</span><span id="d-examples"></span></div>
+
+      <label>試聽文字</label>
+      <textarea id="d-text" rows="3">你好，我是這個故事裡的角色。很高興認識你，接下來的旅程，請多多指教。</textarea>
+
+      <div class="row">
+        <div><label>語言</label><select id="d-lang" class="lang"></select></div>
+        <div><label>候選數量</label><select id="d-count"><option>1</option><option selected>2</option><option>3</option><option>4</option></select></div>
+        <div><label>種子 <span class="hint">空白=隨機</span></label><input id="d-seed" type="number" placeholder="隨機"></div>
+        <div><label>變化度 <b id="d-temp-v">0.9</b></label><input id="d-temp" type="range" min="0.3" max="1.5" step="0.05" value="0.9"></div>
+      </div>
+      <label><input id="d-tw" type="checkbox" checked> 用 BreezyVoice 以台灣腔重念 <span class="hint">（推薦：Qwen 設計音色，BreezyVoice 修正口音；存角色時可選台灣腔版當參考音）</span></label>
+      <div class="actions">
+        <button id="d-go" class="primary big">✨ 生成候選聲音</button>
+      </div>
+      <div id="d-job" class="job hidden"></div>
+    </div>
+
+    <div class="card">
+      <h2>候選結果 <span class="hint">挑一個喜歡的存成角色</span></h2>
+      <div id="d-cands" class="cands"><p class="empty">尚未生成。設計好描述後按「生成候選聲音」。</p></div>
+      <hr>
+      <h3>或上傳現有錄音建立角色</h3>
+      <p class="hint">3–15 秒、乾淨無背景音樂的單人語音效果最好。填入錄音內容的逐字稿可以讓聲音更像。</p>
+      <div class="row">
+        <div class="grow"><label>音檔</label><input id="u-file" type="file" accept="audio/*"></div>
+        <div><label>語言</label><select id="u-lang" class="lang"></select></div>
+      </div>
+      <label>錄音逐字稿 <span class="hint">（選填，留空則只複製音色）</span></label>
+      <textarea id="u-text" rows="2"></textarea>
+      <div class="actions"><button id="u-go">⬆ 用此音檔建立角色</button></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 台詞生成 ============ -->
+<section id="tab-speak" class="tab">
+  <div class="grid2 wide-left">
+    <div class="card">
+      <h2>台詞生成</h2>
+      <div class="row">
+        <div class="grow">
+          <label>聲音來源</label>
+          <select id="s-voice"></select>
+        </div>
+        <div id="s-engine-box"><label>引擎</label><select id="s-engine">
+          <option value="breezy">BreezyVoice（台灣腔）</option><option value="qwen">Qwen3-TTS</option></select></div>
+        <div><label>語言</label><select id="s-lang" class="lang"></select></div>
+      </div>
+      <div id="s-speaker-opts" class="hidden">
+        <label>語氣指示 <span class="hint">（預設音色可用，例如：用興奮的語氣、很生氣地說）</span></label>
+        <input id="s-instruct" type="text" placeholder="例：用溫柔而略帶悲傷的語氣">
+      </div>
+      <div id="s-char-info" class="charinfo"></div>
+
+      <label>台詞 <span class="hint">選取文字後點下方按鈕加上效果，Ctrl+Enter 生成</span></label>
+      <div id="s-toolbar" class="toolbar"></div>
+      <textarea id="s-text" rows="6" placeholder="例：我說過了，[重]絕對不行[/]！[停0.5]……除非你[高]現在[/]就走。"></textarea>
+      <div id="s-preview" class="preview"></div>
+
+      <div class="row sliders">
+        <div><label>語速 <b id="s-speed-v">1.00×</b></label><input id="s-speed" type="range" min="0.5" max="2" step="0.05" value="1"></div>
+        <div><label>整體音高 <b id="s-pitch-v">0</b> 半音</label><input id="s-pitch" type="range" min="-6" max="6" step="0.5" value="0"></div>
+        <div><label>片段間隔 <b id="s-gap-v">60</b> ms</label><input id="s-gap" type="range" min="0" max="400" step="10" value="60"></div>
+      </div>
+      <div class="row">
+        <div><label>種子 <span class="hint">空白=隨機</span></label><input id="s-seed" type="number" placeholder="隨機"></div>
+        <div><label>模型</label><select id="s-model"></select></div>
+        <div class="grow"><label>備註 / 標籤 <span class="hint">逗號分隔</span></label><input id="s-tags" type="text" placeholder="第一章, 戰鬥"></div>
+        <div class="check"><label><input id="s-norm" type="checkbox" checked> 音量標準化</label></div>
+      </div>
+      <div class="actions">
+        <button id="s-go" class="primary big">🎙 生成語音</button>
+      </div>
+      <div id="s-job" class="job hidden"></div>
+      <div id="s-result"></div>
+    </div>
+
+    <div class="card">
+      <h2>此聲音的近期片段</h2>
+      <div id="s-recent" class="clips"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 聲音庫 ============ -->
+<section id="tab-library" class="tab">
+  <div class="card">
+    <div class="libbar">
+      <h2>角色聲音庫</h2>
+      <input id="l-search" type="search" placeholder="搜尋名稱、描述、標籤、台詞…">
+      <select id="l-tag"><option value="">全部標籤</option></select>
+      <label class="btn">📦 匯入角色 <input id="l-import" type="file" accept=".zip" hidden></label>
+    </div>
+    <div id="l-chars" class="chars"></div>
+  </div>
+  <div id="l-detail" class="card hidden"></div>
+</section>
+
+<!-- ============ 設定 ============ -->
+<section id="tab-settings" class="tab">
+  <div class="grid2">
+    <div class="card">
+      <h2>連線與生成</h2>
+      <label>ComfyUI 位址</label>
+      <input id="c-url" type="text">
+      <div class="row">
+        <div><label>角色複製模型</label><select id="c-model"><option>1.7B</option><option>0.6B</option></select></div>
+        <div><label>預設變化度</label><input id="c-temp" type="number" step="0.05" min="0.1" max="2"></div>
+        <div><label>片段間隔 ms</label><input id="c-gap" type="number" step="10" min="0"></div>
+      </div>
+      <label>BreezyVoice 服務位址 <span class="hint">（WSL 中執行 wsl/run_breezy.sh）</span></label>
+      <input id="c-breezy" type="text">
+      <label>口音指示 <span class="hint">（自動加在聲音描述與語氣指示後面；留空則不加）</span></label>
+      <input id="c-accent" type="text">
+      <label>「自動」語言時使用 <span class="hint">（避免模型自己猜成粵語等）</span></label>
+      <select id="c-lang" class="lang"></select>
+      <label><input id="c-simp" type="checkbox"> 送進模型前把繁體轉簡體 <span class="hint">（強烈建議開啟：模型讀繁體字容易出現港式發音或念錯；畫面上仍然顯示繁體）</span></label>
+      <label><input id="c-norm" type="checkbox"> 預設音量標準化（-16 LUFS）</label>
+      <div class="actions">
+        <button id="c-save" class="primary">儲存設定</button>
+        <button id="c-free">🧹 釋放 ComfyUI 顯存</button>
+      </div>
+      <p class="hint">RTX 4060 8GB：1.7B 模型約佔 4–5GB 顯存。顯存吃緊時改用 0.6B（角色複製、預設音色可用；聲音設計只有 1.7B）。</p>
+      <div id="c-info" class="info"></div>
+    </div>
+    <div class="card">
+      <h2>重點字效果預設</h2>
+      <p class="hint">音量 dB、音高 半音、速度 倍率（&lt;1 變慢）。在台詞中以 <code>[標記]文字[/]</code> 使用，可組合如 <code>[重 高]</code>，或自訂 <code>[v+4 p+2 s0.9]</code>。</p>
+      <table class="presets"><thead><tr><th>標記</th><th>名稱</th><th>音量</th><th>音高</th><th>速度</th><th></th></tr></thead><tbody id="c-presets"></tbody></table>
+      <div class="actions"><button id="c-addp">＋ 新增標記</button></div>
+    </div>
+  </div>
+</section>
+</main>
+
+<div id="modal" class="modal hidden"><div class="modal-box" id="modal-box"></div></div>
+<div id="toast" class="toast"></div>
+<script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,47 @@
+{
+  "comfy_url": "http://192.168.50.55:8188",
+  "host": "0.0.0.0",
+  "port": 8190,
+  "clone_model_size": "1.7B",
+  "temperature": 0.9,
+  "segment_gap_ms": 60,
+  "normalize": true,
+  "presets": {
+    "重": {
+      "gain": 5,
+      "pitch": 1,
+      "tempo": 0.9,
+      "label": "加重"
+    },
+    "高": {
+      "gain": 0,
+      "pitch": 3,
+      "tempo": 1.0,
+      "label": "提高音調"
+    },
+    "低": {
+      "gain": 0,
+      "pitch": -3,
+      "tempo": 1.0,
+      "label": "降低音調"
+    },
+    "慢": {
+      "gain": 0,
+      "pitch": 0,
+      "tempo": 0.8,
+      "label": "放慢"
+    },
+    "快": {
+      "gain": 0,
+      "pitch": 0,
+      "tempo": 1.25,
+      "label": "加快"
+    },
+    "輕": {
+      "gain": -6,
+      "pitch": 0,
+      "tempo": 1.0,
+      "label": "輕聲"
+    }
+  }
+}
